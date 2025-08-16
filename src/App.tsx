@@ -37,17 +37,17 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route 
-            path="/login" 
-            element={user ? <Navigate to="/tickets" /> : <LoginPage />} 
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/tickets" /> : <LoginPage />}
           />
-          <Route 
-            path="/tickets" 
-            element={user ? <TicketsPage user={user} /> : <Navigate to="/login" />} 
+          <Route
+            path="/tickets"
+            element={user ? <TicketsPage user={user} /> : <Navigate to="/login" />}
           />
-          <Route 
-            path="/" 
-            element={user ? <Navigate to="/tickets" /> : <Navigate to="/login" />} 
+          <Route
+            path="/"
+            element={user ? <Navigate to="/tickets" /> : <Navigate to="/login" />}
           />
         </Routes>
       </div>

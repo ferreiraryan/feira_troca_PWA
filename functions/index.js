@@ -10,7 +10,7 @@ exports.criarAluno = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
       const { ra, nome, turma, unidade, saldo, senha } = request.body;
-      await admin.auth().createUser({ uid: ra, email: `${ra}@cotemig.app`, password: senha, displayName: nome });
+      await admin.auth().createUser({ uid: ra, email: `${ra}@aluno.cotemig.com.br`, password: senha, displayName: nome });
       await admin.database().ref(`/alunos/${ra}`).set({ nome, turma, unidade, saldo });
       response.status(201).send({ message: "Aluno criado com sucesso!" });
     } catch (error) {
