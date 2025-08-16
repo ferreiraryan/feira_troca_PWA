@@ -17,12 +17,12 @@ const LoginPage: React.FC = () => {
 
     try {
       // Converter matrícula para email
-      const email = `${matricula}@aluno.cotemig.com.br`;
-      
+      const email = `${matricula}@cotemig.app`;
+
       await signInWithEmailAndPassword(auth, email, senha);
     } catch (error: any) {
       console.error('Erro no login:', error);
-      
+
       switch (error.code) {
         case 'auth/user-not-found':
           setError('Matrícula não encontrada');
@@ -95,8 +95,8 @@ const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="login-button"
             disabled={loading}
           >
