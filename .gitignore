@@ -1,4 +1,4 @@
-# Logs
+# Arquivos de Log
 logs
 *.log
 npm-debug.log*
@@ -7,18 +7,35 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Diretório de dependências
+node_modules/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Arquivos de ambiente (segredos)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Saída de build e produção
+dist/
+build/
+.next/
+.nuxt/
+.output/
+
+# Caches e arquivos de sistema
+.npm
+.yarn-cache
+.pnp.*
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+
+# Arquivos de Testes e Cobertura
+coverage/
+.nyc_output/
+
+# Arquivos de configuração de IDEs
+.vscode/
+.idea/
