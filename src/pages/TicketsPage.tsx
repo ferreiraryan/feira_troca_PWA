@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { signOut, type User as FirebaseUser } from 'firebase/auth';
 import { getDatabase, ref, onValue, update } from 'firebase/database';
-import { auth } from '../firebase/config'; // Supondo que a config do auth está aqui
+import { auth } from '../firebase/config';
 import { Ticket, User, LogOut, Plus, Minus, RefreshCw } from 'lucide-react';
+import '../App.css'; // IMPORTAÇÃO DIRETA E SIMPLES
 
-
+// --- Interfaces TypeScript ---
 interface AlunoData {
   nome: string;
   turma: string;
@@ -12,13 +13,12 @@ interface AlunoData {
   saldo: number;
 }
 
-// Define a estrutura de uma transação (para o histórico)
 interface Transacao {
-  id: string; // Usaremos o timestamp como ID
+  id: string;
   tipo: 'ganho' | 'gasto';
   quantidade: number;
   descricao: string;
-  data: number; // Armazenaremos como timestamp para facilitar a ordenação
+  data: number;
 }
 
 interface TicketsPageProps {
@@ -26,38 +26,27 @@ interface TicketsPageProps {
 }
 
 const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
-  // Estado para guardar os dados do aluno vindos do Firebase
   const [alunoData, setAlunoData] = useState<AlunoData | null>(null);
-  // Estado para o histórico de transações (ainda local, podemos mover para o DB depois)
   const [transacoes, setTransacoes] = useState<Transacao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const db = getDatabase();
 
-  // --- Efeito para buscar e ouvir os dados do aluno em tempo real ---
   useEffect(() => {
     if (user?.uid) {
-      // O caminho para os dados do aluno no DB é /alunos/{RA do aluno}
       const alunoRef = ref(db, `alunos/${user.uid}`);
-
-      // onValue "ouve" qualquer mudança nesse caminho
       const unsubscribe = onValue(alunoRef, (snapshot) => {
         if (snapshot.exists()) {
           setAlunoData(snapshot.val() as AlunoData);
         } else {
-          // Caso o aluno esteja logado mas não tenha dados no DB
           console.error("Dados do aluno não encontrados no Realtime Database.");
           setAlunoData(null);
         }
         setIsLoading(false);
       });
-
-      // Função de limpeza: para de ouvir quando o componente é desmontado
       return () => unsubscribe();
     }
   }, [user, db]);
-
-  // --- Funções de Ação ---
 
   const handleLogout = async (): Promise<void> => {
     try {
@@ -67,21 +56,15 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
     }
   };
 
-  // Função para gastar tickets (atualiza o Firebase)
   const gastarTicket = async (quantidade: number, descricao: string): Promise<void> => {
     if (!user || !alunoData || alunoData.saldo < quantidade) {
       alert("Saldo insuficiente!");
       return;
     }
-
     const novoSaldo = alunoData.saldo - quantidade;
     const alunoRef = ref(db, `alunos/${user.uid}`);
-
     try {
-      // Atualiza apenas o campo 'saldo' no Firebase
       await update(alunoRef, { saldo: novoSaldo });
-
-      // Adiciona ao histórico local (idealmente, isso também iria para o DB)
       const novaTransacao: Transacao = {
         id: Date.now().toString(),
         tipo: 'gasto',
@@ -90,14 +73,12 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
         data: Date.now()
       };
       setTransacoes(prev => [novaTransacao, ...prev]);
-
     } catch (error) {
       console.error("Erro ao atualizar saldo:", error);
       alert("Ocorreu um erro ao tentar usar os tickets.");
     }
   };
 
-  // Funções utilitárias para formatação
   const getMatricula = (): string => user?.uid || 'Usuário';
   const formatarData = (timestamp: number): string => new Date(timestamp).toLocaleDateString('pt-BR');
   const formatarHora = (timestamp: number): string => new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -106,7 +87,6 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
     return <div className="loading-screen">Carregando dados do aluno...</div>;
   }
 
-  // O saldo agora vem de alunoData.saldo
   const saldoAtual = alunoData?.saldo ?? 0;
 
   return (
@@ -136,7 +116,6 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
         </div>
 
         <div className="quick-actions">
-          {/* O botão de receber foi removido, pois o saldo é gerenciado pelo admin */}
           <button
             className="action-button spend"
             onClick={() => gastarTicket(1, 'Ticket usado')}

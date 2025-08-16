@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { app } from '../firebase/config';
 import { BookOpen, User, Lock, AlertCircle } from 'lucide-react';
+import '../App.css'; // Importação direta do CSS
 
 const LoginPage: React.FC = () => {
   const [matricula, setMatricula] = useState<string>('');
@@ -24,15 +25,12 @@ const LoginPage: React.FC = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, senha);
       const user = userCredential.user;
 
-      // --- A MÁGICA ACONTECE AQUI ---
-      // Força a atualização do token para pegar a permissão de admin
       const idTokenResult = await user.getIdTokenResult(true);
 
-      // Verifica se o usuário tem a "marca" de admin
       if (idTokenResult.claims.admin === true) {
-        navigate('/admin/dashboard'); // Se for admin, vai para o painel
+        navigate('/admin/dashboard');
       } else {
-        navigate('/tickets'); // Se for aluno, vai para a home/tickets
+        navigate('/tickets');
       }
 
     } catch (error: any) {
