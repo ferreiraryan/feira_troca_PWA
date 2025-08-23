@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { signOut, type User as FirebaseUser } from 'firebase/auth';
 import { getDatabase, ref, onValue, update } from 'firebase/database';
+// Para salvar transações, você precisará do 'push'
+// import { getDatabase, ref, onValue, update, push } from 'firebase/database';
 import { auth } from '../firebase/config';
 import { Ticket, User, LogOut, Plus, Minus, RefreshCw } from 'lucide-react';
-import '../App.css'; // IMPORTAÇÃO DIRETA E SIMPLES
+import '../App.css';
 
 // --- Interfaces TypeScript ---
 interface AlunoData {
@@ -35,7 +37,7 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
   useEffect(() => {
     if (user?.uid) {
       const alunoRef = ref(db, `alunos/${user.uid}`);
-      const unsubscribe = onValue(alunoRef, (snapshot) => {
+      const unsubscribeAluno = onValue(alunoRef, (snapshot) => {
         if (snapshot.exists()) {
           setAlunoData(snapshot.val() as AlunoData);
         } else {
@@ -44,7 +46,33 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
         }
         setIsLoading(false);
       });
-      return () => unsubscribe();
+
+      // --- COMENTÁRIO PARA VOCÊ ---
+      // AQUI: Você deve buscar o histórico de transações do aluno do Firebase.
+      // Crie uma referência para um nó como `transacoes/${user.uid}`.
+      // Use `onValue` para ouvir as atualizações em tempo real e popular o estado `transacoes`.
+      // Exemplo:
+      /*
+      const transacoesRef = ref(db, `transacoes/${user.uid}`);
+      const unsubscribeTransacoes = onValue(transacoesRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          // Converte o objeto retornado pelo Firebase em um array
+          const transacoesArray = Object.keys(data).map(key => ({
+            id: key,
+            ...data[key]
+          }));
+          // Ordena da mais recente para a mais antiga
+          setTransacoes(transacoesArray.sort((a, b) => b.data - a.data));
+        } else {
+          setTransacoes([]); // Limpa o histórico se não houver nada
+        }
+      });
+      */
+
+      // Lembre-se de retornar a função de limpeza para as transações também
+      // return () => { unsubscribeAluno(); unsubscribeTransacoes(); };
+      return () => unsubscribeAluno();
     }
   }, [user, db]);
 
@@ -65,14 +93,27 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
     const alunoRef = ref(db, `alunos/${user.uid}`);
     try {
       await update(alunoRef, { saldo: novoSaldo });
-      const novaTransacao: Transacao = {
-        id: Date.now().toString(),
-        tipo: 'gasto',
+      const novaTransacao = {
+        // id não é mais necessário se o Firebase gerar a chave com push()
+        tipo: 'gasto' as const,
         quantidade,
         descricao,
         data: Date.now()
       };
-      setTransacoes(prev => [novaTransacao, ...prev]);
+
+      // --- COMENTÁRIO PARA VOCÊ ---
+      // AQUI: Salve a `novaTransacao` no Realtime Database.
+      // Use a função `push` para gerar uma chave única para cada transação.
+      // Exemplo:
+      /*
+      const transacoesRef = ref(db, `transacoes/${user.uid}`);
+      await push(transacoesRef, novaTransacao);
+      */
+
+      // Esta linha abaixo se tornará desnecessária se você usar `onValue` no useEffect,
+      // pois o listener do Firebase atualizará o estado `transacoes` automaticamente.
+      setTransacoes(prev => [{ id: Date.now().toString(), ...novaTransacao }, ...prev]);
+
     } catch (error) {
       console.error("Erro ao atualizar saldo:", error);
       alert("Ocorreu um erro ao tentar usar os tickets.");
@@ -116,14 +157,37 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
         </div>
 
         <div className="quick-actions">
-          <button
-            className="action-button spend"
-            onClick={() => gastarTicket(1, 'Ticket usado')}
-            disabled={saldoAtual <= 0}
-          >
-            <Minus size={20} />
-            Usar 1 Ticket
-          </button>
+          <h3>Gastos Rápidos</h3>
+          <div className="button-grid">
+            <button
+              className="action-button spend"
+              onClick={() => gastarTicket(10, 'Gasto de 10 tickets')}
+              disabled={saldoAtual < 10}
+            >
+              <Minus size={16} /> 10
+            </button>
+            <button
+              className="action-button spend"
+              onClick={() => gastarTicket(15, 'Gasto de 15 tickets')}
+              disabled={saldoAtual < 15}
+            >
+              <Minus size={16} /> 15
+            </button>
+            <button
+              className="action-button spend"
+              onClick={() => gastarTicket(20, 'Gasto de 20 tickets')}
+              disabled={saldoAtual < 20}
+            >
+              <Minus size={16} /> 20
+            </button>
+            <button
+              className="action-button spend"
+              onClick={() => gastarTicket(50, 'Gasto de 50 tickets')}
+              disabled={saldoAtual < 50}
+            >
+              <Minus size={16} /> 50
+            </button>
+          </div>
         </div>
 
         <div className="transactions-section">
@@ -161,5 +225,4 @@ const TicketsPage: React.FC<TicketsPageProps> = ({ user }) => {
   );
 };
 
-export default TicketsPage;
-
+export default TicketsPage

@@ -418,6 +418,38 @@ body {
   color: white;
 }
 
+/* Container da seção de gastos rápidos */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  /* Organiza o título acima dos botões */
+  gap: 12px;
+  /* Espaço entre o título "Gastos Rápidos" e o grid de botões */
+  margin-top: 20px;
+}
+
+/* Container que segura os botões (o grid) */
+.button-grid {
+  display: flex;
+  /* Transforma o container em flexível */
+  justify-content: space-between;
+  /* Distribui o espaço igualmente */
+  gap: 10px;
+  /* Adiciona um espaço mínimo entre os botões */
+}
+
+/* Estilo para os botões dentro do grid para que ocupem o espaço */
+.button-grid .action-button {
+  flex-grow: 1;
+  /* Faz os botões crescerem para ocupar o espaço disponível */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  font-size: 1rem;
+}
+
 .action-button.spend {
   color: #e74c3c;
   border-color: #e74c3c;
